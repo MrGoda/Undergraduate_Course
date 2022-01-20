@@ -1,0 +1,554 @@
+---
+title: "Final Markdown"
+author: "Team 1"
+date: "11/29/2021"
+output:
+  word_document: default
+  html_document: default
+---
+
+## Load Packages
+
+```{r, warning=FALSE, message=FALSE}
+library(janitor)
+library(readr)
+library(magrittr)
+library(VIM)
+library(dplyr)
+library(repr)
+library(ggplot2)
+library(rpart)
+library(rattle)
+library(rpart.plot)
+library(randomForest)
+library(caret)
+library(rsample)
+library(xgboost)
+library(tidyverse)
+```
+
+
+## Load Data
+
+```{r}
+data2014Python <- read.csv("/deac/sta/classes/sta381-fa-2021/Team01/data2014Python.csv")
+data2014 <- read.csv("/deac/sta/classes/sta381-fa-2021/Team01/2014_Financial_Data.csv")
+
+
+data2015Python <- read.csv("/deac/sta/classes/sta381-fa-2021/Team01/data2015Python.csv")
+data2015 <- read.csv("/deac/sta/classes/sta381-fa-2021/Team01/2015_Financial_Data.csv")
+
+
+data2016Python <- read.csv("/deac/sta/classes/sta381-fa-2021/Team01/data2016Python.csv")
+data2016 <- read.csv("/deac/sta/classes/sta381-fa-2021/Team01/2016_Financial_Data.csv")
+
+
+data2017Python <- read.csv("/deac/sta/classes/sta381-fa-2021/Team01/data2017Python.csv")
+data2017 <- read.csv("/deac/sta/classes/sta381-fa-2021/Team01/2017_Financial_Data.csv")
+
+
+data2018Python <- read.csv("/deac/sta/classes/sta381-fa-2021/Team01/data2018Python.csv")
+data2018 <- read.csv("/deac/sta/classes/sta381-fa-2021/Team01/2018_Financial_Data.csv")
+```
+
+## Data Cleaning
+
+# 2014
+
+```{r}
+table(is.na(data2014))
+#Original NA count
+```
+
+```{r}
+table(is.na(data2014Python))
+#Cleaned NA count
+```
+
+```{r}
+table(data2014Python$X2015.PRICE.VAR.... >= 500)
+#Check for inorganic growth/ outliers
+```
+
+```{r}
+data2014Python <- subset(data2014Python, data2014Python$X2015.PRICE.VAR.... < 500)
+#Remove 22 outliers
+```
+
+```{r}
+table(data2014Python$X2015.PRICE.VAR.... >= 500)
+#Confirm outlier removal
+```
+
+# 2015
+
+```{r}
+table(is.na(data2015))
+#Original NA count
+```
+
+```{r}
+table(is.na(data2015Python))
+#Cleaned NA count
+```
+
+```{r}
+table(data2015Python$X2016.PRICE.VAR.... >= 500)
+#Check for inorganic growth/ outliers
+```
+
+```{r}
+data2015Python <- subset(data2015Python, data2015Python$X2016.PRICE.VAR.... < 500)
+#Remove 10 outliers
+```
+
+```{r}
+table(data2015Python$X2016.PRICE.VAR.... >= 500)
+#Confirm outlier removal
+```
+# 2016
+
+```{r}
+table(is.na(data2016))
+#Original NA count
+```
+
+```{r}
+table(is.na(data2016Python))
+#Cleaned NA count
+```
+
+```{r}
+table(data2016Python$X2017.PRICE.VAR.... >= 500)
+#Check for inorganic growth/ outliers
+```
+
+```{r}
+data2016Python <- subset(data2016Python, data2016Python$X2017.PRICE.VAR.... < 500)
+#Remove 19 outliers
+```
+
+# 2017
+
+```{r}
+table(is.na(data2017))
+#Original NA count
+```
+
+```{r}
+table(is.na(data2017Python))
+#Cleaned NA count
+```
+
+```{r}
+table(data2017Python$X2018.PRICE.VAR.... >= 500)
+#Check for inorganic growth/ outliers
+```
+
+```{r}
+data2017Python <- subset(data2017Python, data2017Python$X2018.PRICE.VAR.... < 500)
+#Remove 5 outliers
+```
+
+```{r}
+table(data2017Python$X2018.PRICE.VAR.... >= 500)
+#Confirm outlier removal
+```
+
+# 2018
+
+```{r}
+table(is.na(data2018))
+#Original NA count
+```
+
+```{r}
+table(is.na(data2018Python))
+#Cleaned NA count
+```
+
+```{r}
+table(data2018Python$X2019.PRICE.VAR.... >= 500)
+#Check for inorganic growth/ outliers
+```
+
+```{r}
+data2018Python <- subset(data2018Python, data2018Python$X2019.PRICE.VAR.... < 500)
+#Remove 8 outliers
+```
+
+# Organize Explanatory Variables
+
+```{r}
+names(data2014Python)[65] <- "PriceVar"
+names(data2015Python)[58] <- "PriceVar"
+names(data2016Python)[61] <- "PriceVar"
+names(data2017Python)[63] <- "PriceVar"
+names(data2018Python)[65] <- "PriceVar"
+```
+
+```{r}
+compare_df_cols(data2014Python, data2015Python, data2016Python, data2017Python, data2018Python)
+#Compare variables between data frames
+```
+
+```{r}
+intersectionX <- intersect(colnames(data2014Python),colnames(data2015Python))
+intersectionX2 <- intersect(colnames(data2016Python), colnames(data2017Python))
+intersectionX3 <- intersect(intersectionX, intersectionX2)
+intersectionX4 <- intersect(intersectionX3, colnames(data2018Python))
+intersectionX4
+commonVariables <- c(intersectionX4)
+#Place common variables in a list 'commonVariables'
+```
+
+```{r}
+data2014CoreCleaned <- data2014Python[,names(data2014Python) %in% commonVariables]
+data2015CoreCleaned <- data2015Python[,names(data2015Python) %in% commonVariables]
+data2016CoreCleaned <- data2016Python[,names(data2016Python) %in% commonVariables]
+data2017CoreCleaned <- data2017Python[,names(data2017Python) %in% commonVariables]
+data2018CoreCleaned <- data2018Python[,names(data2018Python) %in% commonVariables]
+#Trim variables in annual data frames based on 'commonVariables'
+```
+
+```{r}
+compare_df_cols(data2014CoreCleaned, data2015CoreCleaned, data2016CoreCleaned, data2017CoreCleaned, data2018CoreCleaned)
+#Re-Compare variables between data frames
+```
+
+```{r, results='hide'}
+names(data2014CoreCleaned)[1] <- "Stock"
+names(data2015CoreCleaned)[1] <- "Stock"
+names(data2016CoreCleaned)[1] <- "Stock"
+names(data2017CoreCleaned)[1] <- "Stock"
+names(data2018CoreCleaned)[1] <- "Stock"
+```
+
+# Determine stock data available for all five datasets
+```{r}
+stocks<-intersect(data2014CoreCleaned$Stock, data2015CoreCleaned$Stock)
+stocks<-intersect(stocks, data2016CoreCleaned$Stock)
+stocks<-intersect(stocks, data2017CoreCleaned$Stock)
+stocks<-intersect(stocks, data2018CoreCleaned$Stock)
+#Create list of stocks that are common amongst all 5 data sets
+```
+
+```{r}
+eliminate.stocks<-c()
+for(i in 1:length(data2014CoreCleaned$Stock))
+{
+  if(length(intersect(data2014CoreCleaned$Stock[i], stocks)) == 0)
+  {
+    eliminate.stocks<-c(eliminate.stocks, i)
+  }
+}
+data2014FullyCleaned<-data2014CoreCleaned[-eliminate.stocks,]
+eliminate.stocks<-c()
+for(i in 1:length(data2015CoreCleaned$Stock))
+{
+  if(length(intersect(data2015CoreCleaned$Stock[i], stocks)) == 0)
+  {
+    eliminate.stocks<-c(eliminate.stocks, i)
+  }
+}
+data2015FullyCleaned<-data2015CoreCleaned[-eliminate.stocks,]
+eliminate.stocks<-c()
+for(i in 1:length(data2016CoreCleaned$Stock))
+{
+  if(length(intersect(data2016CoreCleaned$Stock[i], stocks)) == 0)
+  {
+    eliminate.stocks<-c(eliminate.stocks, i)
+  }
+}
+data2016FullyCleaned<-data2016CoreCleaned[-eliminate.stocks,]
+eliminate.stocks<-c()
+for(i in 1:length(data2017CoreCleaned$Stock))
+{
+  if(length(intersect(data2017CoreCleaned$Stock[i], stocks)) == 0)
+  {
+    eliminate.stocks<-c(eliminate.stocks, i)
+  }
+}
+data2017FullyCleaned<-data2017CoreCleaned[-eliminate.stocks,]
+eliminate.stocks<-c()
+for(i in 1:length(data2018CoreCleaned$Stock))
+{
+  if(length(intersect(data2018CoreCleaned$Stock[i], stocks)) == 0)
+  {
+    eliminate.stocks<-c(eliminate.stocks, i)
+  }
+}
+data2018FullyCleaned<-data2018CoreCleaned[-eliminate.stocks,]
+saveRDS(data2014FullyCleaned, file="data2014FullyCleaned.RDS")
+saveRDS(data2015FullyCleaned, file="data2015FullyCleaned.RDS")
+saveRDS(data2016FullyCleaned, file="data2016FullyCleaned.RDS")
+saveRDS(data2017FullyCleaned, file="data2017FullyCleaned.RDS")
+saveRDS(data2018FullyCleaned, file="data2018FullyCleaned.RDS")
+#Create a new version of each data set: 'data20##FullyCleaned' which only contain information on the stocks identified in the aforementioned list
+```
+
+```{r}
+dataTotal <- rbind(data2014FullyCleaned, data2015FullyCleaned)
+dataTotal <- rbind(dataTotal, data2016FullyCleaned)
+dataTotal <- rbind(dataTotal, data2017FullyCleaned)
+dataTotal <- rbind(dataTotal, data2018FullyCleaned)
+#Combine data sets and save as "dataTotal"
+```
+
+```{r}
+dataTotal <- dataTotal[,-c(9)]
+#Remove duplicate 'NI' column
+```
+
+```{r}
+names(dataTotal) <- c("Stock", "Rev", "GP", "SGA", "OE", "OI", "EBT", "NI", "EPS", "DEPS", "WOS", "GM", "OM", "EBITDA", "EBIT", "CI", "PPM", "NPM", "CCE", "PPE", "TA", "TL", "RE", "SE", "DDA", "OCF", "CapEx", "ICF", "FinCF", "NCF", "FCF", "AT", "QIR", "TAV", "GPG", "OIG", "OCFG", "Sector", "Class", "PriceVar")
+#Abbreviate variables 
+```
+
+```{r}
+dataTotal$Sector <- as.factor(dataTotal$Sector)
+levels(dataTotal$Sector) <- c("BM", "CS", "CC", "CD", "E", "FS", "H", "I", "RE", "T", "U")
+levels(dataTotal$Sector)
+#Abbreviate levels of 'Sector'
+```
+
+```{r}
+write.csv(dataTotal,'dataTotal.csv')
+```
+
+## Exploratory Data Analysis
+```{r}
+# Categorical variable
+options(repr.plot.width = 17, repr.plot.height = 10)
+ggplot(dataTotal, aes(x=Sector,fill=as.factor(Class)),main = "Figure 5.1: Sector vs. Class")+ geom_bar(position = 'fill')+theme_bw()+theme(axis.text.x = element_text(angle=90, vjust=.05, hjust=1))
+```
+
+```{r}
+# Net Income
+A<-ggplot(dataTotal, aes(x=NI, y=as.factor(Class))) +
+  geom_boxplot(width=0.1, fill="white") + labs(title="Figure 5.2: Net Income")
+
+# EPS
+B<-ggplot(dataTotal, aes(x=EPS, y=as.factor(Class))) +
+  geom_boxplot(width=0.1, fill="yellow") + labs(title="Figure 5.3:EPS")
+
+# Gross Profit
+C<-ggplot(dataTotal, aes(x=GP, y=as.factor(Class))) + geom_boxplot(width=0.1, fill="purple") + labs(title="Figure 5.4:Gross Profit")
+
+# Free Cash Flow
+D<-ggplot(dataTotal, aes(x=FCF, y=as.factor(Class))) + geom_boxplot(width=0.1, fill="green") + labs(title="Figure 5.5: Free Cash Flow")
+gridExtra::grid.arrange(A,B,C,D, ncol=2)
+```
+
+
+## Logistic Regression EDA
+```{r}
+ get_logitplot <- function(x, y, xname, bins, formulahere){
+
+    # Step 1 : Create storage space needed for the loop
+    nbins <- length(bins)
+    probs.each <-NULL
+
+    # Step 2: Obtain the probability
+    for(i in 1:nbins){
+      if( i < nbins){
+        scores.in <- which(x< bins[i+1] & x >= bins[i])
+      } else{
+        scores.in <- which(x> bins[i])
+      }
+      numerator  <- length(which(y[scores.in]==1))
+      denominator      <- length(which(y[scores.in]==0))
+      probs.each <- c(probs.each,ifelse(numerator>0 & denominator>0,numerator/denominator,0))
+    }
+
+    #  Step 3: Convert to the log Odds
+    log.RR.each <- log(probs.each)
+
+    to.remove <- which(log.RR.each=="-Inf")
+    log.RR.each <-log.RR.each[-to.remove]
+    bins <- bins[-to.remove]
+
+    dataHere <-data.frame(c(bins), c(log.RR.each))
+
+    ggplot(dataHere, aes(x =bins, y = log.RR.each)) + geom_point() + geom_smooth(method = "lm", formula = formulahere, se = FALSE)+labs(x = xname, y = "Log Odds")
+ }
+# CREATE get_logitplot FUNCTION
+```
+
+```{r}
+get_logitplot(x=dataTotalModel$NI , y=dataTotalModel$Class, xname = "Net Income", bins = seq(from = -370052400, to = 3741000000, by = 50000000), formula = y ~ x) + labs(title="Net Income Logit Plot")
+#1st degree logit for 'NI'
+```
+
+```{r}
+get_logitplot(x=dataTotalModel$EPS , y=dataTotalModel$Class, xname = "Earnings per Share", bins = seq(from = -21.1501, to = 8.7854, by = 0.5), formula = y ~ poly(x,2)) + labs(title="Earnings per Share Logit Plot")
+#2nd degree logit for 'EPS'
+```
+
+```{r}
+get_logitplot(x=dataTotalModel$GP , y=dataTotalModel$Class, xname = "Gross Profit", bins = seq(from = 0, to = 1.597e+10, by = 100000000), formula = y ~ poly(x,2)) + labs(title="Figure 8.1.3:Gross Profit Logit Plot")
+#2nd degree logit for 'GP'
+```
+
+```{r}
+get_logitplot(x=dataTotalModel$FCF , y=dataTotalModel$Class, xname = "Free Cash Flow", bins = seq(from = -522729800, to = 4529112000 , by = 50000000), formula = y ~ poly(x,2)) + labs(title="Figure 8.1.4:Free Cash Flow Logit Plot")
+#2nd degree logit for 'FCF'
+```
+
+
+## Models
+
+#Logistic Regresssion
+```{r}
+#logistic regression
+# Remove Sector, Stock, and Price Var
+newdata <- dataTotal[c(-1,-40)]
+newdata$Class  <- as.factor(newdata$Class)
+# Fit the model
+logitModel <- glm(Class ~., data = newdata, family = binomial)
+summary(logitModel)
+# AIC: 24704
+```
+
+```{r}
+# Estimate the probability of stock growth for each stock in the data set
+probabilities <- predict(logitModel, type = "response")
+# Predicted probabilities for every row
+predicted.Y <- ifelse(probabilities > 0.75, 1, 0)
+# Make the confusion matrix
+knitr::kable(table("Actual"= newdata$Class, "Predictions"=predicted.Y),col.names= c("0 = Negative Price Change", "1 = Positive Price Change"), caption = "Predicted (Columns) vs. Actual (Rows)")
+# CER= (76+10066)/18500= 0.548
+```
+
+```{r}
+set.seed(3456)
+trainIndex <- createDataPartition(newdata2$Class, p = .7,
+                                  list = FALSE,
+                                  times = 1)
+Train <- newdata2[trainIndex,]
+Test <- newdata2[-trainIndex,]
+```
+
+```{r}
+# Reduced model
+logitModel2 <- glm(Class ~ Rev + GM + NCF + FCF + AT + GPG + OIG + OCFG, data = newdata2, family = binomial)
+summary(logitModel2)
+```
+
+##Test train and test set
+```{r}
+logitModel3 <- glm(Class ~ ., data = Train, family = binomial)
+summary(logitModel3)
+```
+
+```{r}
+anova(logitModel, logitModel2, test ="Chisq")
+```
+
+```{r}
+library(ROCR)
+
+# Create a data frame where the first column is the predicted probabilities, and the second is the actual value of Y.
+df <- data.frame("predictions" = predict(logitModel, type = "resp"), "labels"= newdata$Class)
+
+# Make predictions for all different thresholds
+pred <- prediction(df$predictions, df$labels)
+
+# Assess predictive performance
+perf <- performance(pred,"tpr","fpr")
+
+# Make the graph
+plot(perf,colorize=TRUE)
+```
+
+
+# Pruned Tree
+```{r, warning=FALSE}
+##Pruned CLassification Tree Method
+
+#Remove Price Var
+dataTotalModel <- dataTotal[,-c(1,40)]
+
+#Sets the seed so the tree doesn't change every time the code is ran
+set.seed(100)
+
+#Classification Tree
+t1 <- rpart(Class ~ ., method = "class", data = dataTotalModel, cp=0)
+
+#Pruning the Tree
+prune.t1 <- prune(t1, cp=t1$cptable[10, "CP"]) #After looking at the CP Table of Tree 1, the minimum xerror value was from row 10
+
+#Plotting the Pruned Tree
+fancyRpartPlot(prune.t1, sub = "Figure 5.1: Pruned Tree Model", tweak = 1.5)
+
+## Calculating Test CER
+# 0.44557 * 0.85773 = 38.2% 
+```
+
+```{r}
+printcp(t1)
+```
+
+
+#Bagged Classification Tree
+```{r}
+#Sets the seed so the tree doesn't change every time the code is ran
+set.seed(100)
+
+#Model Bagged Forest
+bag.F1 <- randomForest(as.factor(Class) ~ ., data = dataTotalModel, mtry = 37, importance = TRUE, ntree = 1000, compete = FALSE)
+
+#Output for the bagged forest Model and Error
+bag.F1
+#37.44%
+
+#Variable Importance Table
+knitr::kable( varImp(bag.F1, compete = FALSE, surrogates = FALSE) )
+
+#Top 3 Most Important Variables
+#1 Sector
+#2 Financial Cash Flow
+#3 Quality of Income Ratio
+```
+
+
+
+
+#Boosted Classification Tree (xgBoost)
+```{r}
+set.seed(100)
+boostTrainSamp <- dataTotalModel$Class %>% 
+  createDataPartition(p=0.8 , list = FALSE)
+boostTrainData <- dataTotalModel[boostTrainSamp,]
+boostTestData <- dataTotalModel[-boostTrainSamp,]
+#Create training and test data
+```
+
+```{r}
+set.seed(100)
+boostClass <- train(as.factor(Class)~. , data = boostTrainData , method = "xgbTree" , trControl = trainControl("cv" , number = 10))
+boostClass$bestTune
+#Fit model with 10-fold CV and display tuning parameters used
+```
+
+```{r}
+boostPreds <- boostClass %>% 
+  predict(boostTestData)
+mean(boostPreds == boostTestData$Class)
+#Predicition accuracy on test data (34.899 CER)
+```
+
+```{r}
+varImp(boostClass)
+#Variable Importance
+```
+
+
+#Gradient Boosting Decision Tree (LightGBM)
+#Coded in python, detailed codings can be seen in file "main.py"
+
+
+
+
+
+
