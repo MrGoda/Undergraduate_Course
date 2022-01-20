@@ -1,0 +1,295 @@
+---
+title: "Project 2"
+author: "Dillon Ebner, Lila Loughlin, Patrick Fan"
+date: "4/27/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+```{r}
+library(mclust)
+library(jpeg)
+library(imager)
+library(magrittr)
+library(expss)
+```
+##Introduction 
+
+We will be conducting analysis on 60,000 black and white 28x28 images of different clothing items.  These include T-Shirts/Top, Trouser, Pullovers, Dresses, Coats, Sandals, Shirts, Sneakers, Bags, and Ankle Boots (Numbered from 0-9 respectively).  
+
+Here we read the data for R: 
+```{r}
+data <- read.csv("project2.csv")
+```
+
+Next we applied labels to the values 0-9 with the proper classification to make analysis easier as we move on.
+
+##Data visualization:
+
+```{r}
+x = as.matrix(data[,-1])
+source('~/Desktop/Stats/plot_image (1).R')
+par(mfrow = c(10, 4), mar = rep(.1,4))
+A_1 = x[4,]
+A_1 = t(matrix(A_1, nrow = 28, ncol = 28))
+plot_image(A_1, ncol(A_1))
+A_2 = x[14,]
+A_2 = t(matrix(A_2, nrow = 28, ncol = 28))
+plot_image(A_2, ncol(A_2))
+A_3 = x[25,]
+A_3 = t(matrix(A_3, nrow = 28, ncol = 28))
+plot_image(A_3, ncol(A_3))
+A_4 = x[32,]
+A_4 = t(matrix(A_4, nrow = 28, ncol = 28))
+plot_image(A_4, ncol(A_4))
+B_1 = x[30,]
+B_1 = t(matrix(B_1, nrow = 28, ncol = 28))
+plot_image(B_1, ncol(B_1))
+B_2 = x[40,]
+B_2 = t(matrix(B_2, nrow = 28, ncol = 28))
+plot_image(B_2, ncol(B_2))
+B_3 = x[55,]
+B_3 = t(matrix(B_3, nrow = 28, ncol = 28))
+plot_image(B_3, ncol(B_3))
+B_4 = x[70,]
+B_4 = t(matrix(B_4, nrow = 28, ncol = 28))
+plot_image(B_4, ncol(B_4))
+C_1 = x[1,]
+C_1 = t(matrix(C_1, nrow = 28, ncol = 28))
+plot_image(C_1, ncol(C_1))
+C_2 = x[15,]
+C_2 = t(matrix(C_2, nrow = 28, ncol = 28))
+plot_image(C_2, ncol(C_2))
+C_3 = x[16,]
+C_3 = t(matrix(C_3, nrow = 28, ncol = 28))
+plot_image(C_3, ncol(C_3))
+C_4 = x[35,]
+C_4 = t(matrix(C_4, nrow = 28, ncol = 28))
+plot_image(C_4, ncol(C_4))
+J_1 = x[5,]
+J_1 = t(matrix(J_1, nrow = 28, ncol = 28))
+plot_image(J_1, ncol(J_1))
+J_2 = x[18,]
+J_2 = t(matrix(J_2, nrow = 28, ncol = 28))
+plot_image(J_2, ncol(J_2))
+J_3 = x[19,]
+J_3 = t(matrix(J_3, nrow = 28, ncol = 28))
+plot_image(J_3, ncol(J_3))
+J_4 = x[20,]
+J_4 = t(matrix(J_4, nrow = 28, ncol = 28))
+plot_image(J_4, ncol(J_4))
+D_1 = x[6,]
+D_1 = t(matrix(D_1, nrow = 28, ncol = 28))
+plot_image(D_1, ncol(D_1))
+D_2 = x[7,]
+D_2 = t(matrix(D_2, nrow = 28, ncol = 28))
+plot_image(D_2, ncol(D_2))
+D_3 = x[9,]
+D_3 = t(matrix(D_3, nrow = 28, ncol = 28))
+plot_image(D_3, ncol(D_3))
+D_4 = x[23,]
+D_4 = t(matrix(D_4, nrow = 28, ncol = 28))
+plot_image(D_4, ncol(D_4))
+E_1 = x[8,]
+E_1 = t(matrix(E_1, nrow = 28, ncol = 28))
+plot_image(E_1, ncol(E_1))
+E_2 = x[31,]
+E_2 = t(matrix(E_2, nrow = 28, ncol = 28))
+plot_image(E_2, ncol(E_2))
+E_3 = x[33,]
+E_3 = t(matrix(E_3, nrow = 28, ncol = 28))
+plot_image(E_3, ncol(E_3))
+E_4 = x[46,]
+E_4 = t(matrix(E_4, nrow = 28, ncol = 28))
+plot_image(E_4, ncol(E_4))
+F_1 = x[3,]
+F_1 = t(matrix(F_1, nrow = 28, ncol = 28))
+plot_image(F_1, ncol(F_1))
+F_2 = x[41,]
+F_2 = t(matrix(F_2, nrow = 28, ncol = 28))
+plot_image(F_2, ncol(F_2))
+F_3 = x[44,]
+F_3 = t(matrix(F_3, nrow = 28, ncol = 28))
+plot_image(F_3, ncol(F_3))
+F_4 = x[47,]
+F_4 = t(matrix(F_4, nrow = 28, ncol = 28))
+plot_image(F_4, ncol(F_4))
+G_1 = x[22,]
+G_1 = t(matrix(G_1, nrow = 28, ncol = 28))
+plot_image(G_1, ncol(G_1))
+G_2 = x[29,]
+G_2 = t(matrix(G_2, nrow = 28, ncol = 28))
+plot_image(G_2, ncol(G_2))
+G_3 = x[36,]
+G_3 = t(matrix(G_3, nrow = 28, ncol = 28))
+plot_image(G_3, ncol(G_3))
+G_4 = x[48,]
+G_4 = t(matrix(G_4, nrow = 28, ncol = 28))
+plot_image(G_4, ncol(G_4))
+H_1 = x[10,]
+H_1 = t(matrix(H_1, nrow = 28, ncol = 28))
+plot_image(H_1, ncol(H_1))
+H_2 = x[12,]
+H_2 = t(matrix(H_2, nrow = 28, ncol = 28))
+plot_image(H_2, ncol(H_2))
+H_3 = x[21,]
+H_3 = t(matrix(H_3, nrow = 28, ncol = 28))
+plot_image(H_3, ncol(H_3))
+H_4 = x[28,]
+H_4 = t(matrix(H_4, nrow = 28, ncol = 28))
+plot_image(H_4, ncol(H_4))
+I_1 = x[2,]
+I_1 = t(matrix(I_1, nrow = 28, ncol = 28))
+plot_image(I_1, ncol(I_1))
+I_2 = x[13,]
+I_2 = t(matrix(I_2, nrow = 28, ncol = 28))
+plot_image(I_2, ncol(I_2))
+I_3 = x[17,]
+I_3 = t(matrix(I_3, nrow = 28, ncol = 28))
+plot_image(I_3, ncol(I_3))
+I_4 = x[43,]
+I_4 = t(matrix(I_4, nrow = 28, ncol = 28))
+plot_image(I_4, ncol(I_4))
+```
+Above is a 10x4 matrix, each row showing 4 examples of each category of clothing.  The first is the 0th label (T-shirt/Top) and as you move down it continues numerically through the 9 other labels.  We transposed the images so they were easier to view.
+
+##Standardizing the Data: 
+```{r}
+data_sd = data/255
+```  
+Next we had to standardize the data set to make sure ewach picture had a much more consistent format for analysis.  To do this we divided the data by the max value, which was 255.
+
+##Trying Clustering Methods and Analysis:
+First we tried to use the k-means clustering method.  We made both a plot and 
+1. K-Mean
+```{r}
+n <- nrow(data_sd)
+set.seed(100)
+wss <- rep(0, 20)
+wss[1] <-(n-1) * sum(sapply(data_sd,var))
+for(i in 2:20){
+  wss[i] <- sum(kmeans(data_sd, centers = i)$withinss)
+}
+
+plot(1:20, wss[1:20], type = "b", xlab = "Number of groups", ylab = "Within groups sum of squares")
+```
+Another measure:
+```{r}
+percentss = rep(0, 19)
+for (i in 1:19){
+  percentss[i] = wss[i + 1] / wss[i]
+}
+percentss
+```
+From the plot, it seems that the change is relatively flat after k = 6. Also from the percentage of drop calculated for the within groups sum of squares, the percentage is greater than 0.95 for all k >= 6. Therefore, we believe that the number of groups should be set to 6. 
+Using k = 6:
+```{r}
+k_6 = kmeans(data_sd, centers = 6)
+```
+Storing the 6 clusters:
+```{r}
+R1 = data[which(k_6$cluster == 1), 1]
+R2 = data[which(k_6$cluster == 2), 1]
+R3 = data[which(k_6$cluster == 3), 1]
+R4 = data[which(k_6$cluster == 4), 1]
+R5 = data[which(k_6$cluster == 5), 1]
+R6 = data[which(k_6$cluster == 6), 1]
+R1list <- table(R1)
+R2list <- table(R2)
+R3list <- table(R3)
+R4list <- table(R4)
+R5list <- table(R5)
+R6list <- table(R6)
+```
+From our k-means clustering performance we stored each of the 6 clusters into its own variable (i.e: R1, R2, etc...).  Then we turned each cluster into a tabel that were divided up into the number of pictures in each category/label.  This made it possible to visualize the differences between the clusters.
+
+Visualization with barplots:
+```{r}
+par(mfrow = c(3, 2))
+barplot(R1list, main = "cluster1", xlab = "group", ylab = "# of occurances")
+barplot(R2list, main = "cluster2", xlab = "group", ylab = "# of occurances")
+barplot(R3list, main = "cluster3", xlab = "group", ylab = "# of occurances")
+barplot(R4list, main = "cluster4", xlab = "group", ylab = "# of occurances")
+barplot(R5list, main = "cluster5", xlab = "group", ylab = "# of occurances")
+barplot(R6list, main = "cluster6", xlab = "group", ylab = "# of occurances")
+```
+Cluster 1 tends to have sandals and sneakers.  Cluster 2 has mainly pull-overs, coat, and few shirts and bags. Cluster 3 seems to contain a majority of ankle boots and bags.  Cluster 4 has a wide variety of categories, majority being shirts and pullovers. In Cluster 5, it carries mainly trousers and dresses.   Finally, Cluster 6 has a lot of t-shirts/tops, with some dresses, shirts, and coats.
+
+2. Hierarchical Clustering
+Hierarchical method cannot process dataset this large.
+
+3. Statistical Clustering
+We could not perform with the full data set because it was too large and would not run.  Therefore we used PCA analysis to reduce dimensions:
+```{r}
+pca = prcomp(data_sd)
+E = pca$rotation
+pcasum = summary(pca)
+PC = min(which(pcasum$importance[3,] >= 0.90 ))
+PC
+```
+```{r}
+data_pc = data_sd[, 1:PC]
+```
+Then conduct Statistical clustering:
+```{r}
+fit = Mclust(data_pc)  
+```
+```{r}
+fit$G
+fit$BIC
+```
+This gives analysis of the statistical clustering method.  It demonstrates that 8 clusters is the most ideal number to separate the data set based on the statistical method.  Below we performed a similar method to separating the clusters into their own list as we did we the k-means.  However, we used a for loop to separate each cluster into a specific list:
+```{r}
+class_est=fit$classification
+class = data$label
+ls = list()
+for(i in 1:length(unique(class_est)))
+{
+  ls[[i]]=class[which(class_est==i)]
+}
+
+
+list1 <- table(ls[[1]])
+list2 <- table(ls[[2]])
+list3 <- table(ls[[3]])
+list4 <- table(ls[[4]])
+list5 <- table(ls[[5]])
+list6 <- table(ls[[6]])
+list7 <- table(ls[[7]])
+list8 <- table(ls[[8]])
+```
+Above we did the same operation as the k-means by representing the clusters as a table that shows the frequency of the categories in each cluster grouping.
+
+Below we created barplots to visualize the clusters:
+```{r}
+par(mfrow = c(4,2), mar= rep(2,4))
+barplot(list1, main = "cluster1", xlab = "group", ylab = "# of occurances")
+barplot(list2, main = "cluster2", xlab = "group", ylab = "# of occurances")
+barplot(list3, main = "cluster3", xlab = "group", ylab = "# of occurances")
+barplot(list4, main = "cluster4", xlab = "group", ylab = "# of occurances")
+barplot(list5, main = "cluster5", xlab = "group", ylab = "# of occurances")
+barplot(list6, main = "cluster6", xlab = "group", ylab = "# of occurances")
+barplot(list7, main = "cluster7", xlab = "group", ylab = "# of occurances")
+barplot(list8, main = "cluster8", xlab = "group", ylab = "# of occurances")
+```
+Cluster 1 has majority of upperbody clothing including coats and shirts.  Cluster 2 and 3 have a majority of t-shirt top, pullovers, and shirts again an upperbody clothing category.  Cluster 4 has a majority of feet wear: sandals, sneakers, ankle boots, and also some bags.  Cluster 5 is mainly bags.  Cluster is mainly sandals and ankle boots, both feet apparel.  Cluster 7 are mainly trousers and dresses, with some coats.  Cluster 8 is a majority T-shirts, shirts, and bags.  Differing from the k-means clusters there seems to be more variation in each group.
+
+##Conclusion: 
+
+In this project we analyzed 60,000 pictures of different clothing items belonging to 10 different categories.  We used methods for clustering involving k-means, hierarchical, and statistical (before and after PCA) to determine the appropriate number of clusters for the data set.  Using k-means we found 6 clusters to be the most accurate fit for the data.  Hierarchical clustering was not possible due to the immense size of the data set.  We were unable to use statistical clustering method with the raw data.  We instead had to use PCA to reduce the dimensions.  After using this method we found 8 clusters to be the most accurate fit for the reduced data.  In analyzing both the k-means and statistical methods of clustering we found that both seemed to separate clusters based on pictures with similar attributes.  However, k-means clusters seemed to have higher frequencies of specific categories, while statistical methods had a more diverse range of categories per cluster.
+
+
+
+
+
+
+
+
+
+
