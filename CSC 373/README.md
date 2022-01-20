@@ -1,4 +1,4 @@
-# CSC-301
+# CSC-373
 
 Course Name: Data Mining
 
