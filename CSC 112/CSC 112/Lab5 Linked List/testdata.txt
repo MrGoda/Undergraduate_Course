@@ -1,0 +1,12 @@
+Here is an example of the data that
+I want to read and check.  I hope that this
+works well.
+
+Now is the time for all young people to come to the aid of their
+country.  Vote!
+
+Looks like it might be working ok.  Now for something tricky:  123.
+
+Winston-Salem
+
+..??!
